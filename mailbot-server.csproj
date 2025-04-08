@@ -5,6 +5,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>mailbot_server</RootNamespace>
+    <UserSecretsId>mailbot-secrets</UserSecretsId>
   </PropertyGroup>
 
 
