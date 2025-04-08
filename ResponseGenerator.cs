@@ -29,7 +29,7 @@ public class ResponseGenerator
         var options = new ChatCompletionOptions();
 
         var messageContent =
-            $"Here is email subject: {emailMessage.Subject} and message body {emailMessage.Body}. Write email response.";
+            $"Here is the subject: {emailMessage.Subject} and message body {emailMessage.Body}. Write a response.";
         var userMessage = new UserChatMessage(messageContent);
 
         var chatMessages = new List<ChatMessage>();
