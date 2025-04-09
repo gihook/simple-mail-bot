@@ -1,0 +1,20 @@
+services:
+  mailbot:
+    image: mcr.microsoft.com/dotnet/sdk:9.0
+    container_name: mailbot
+    working_dir: /api
+    env_file:
+      - .env
+    volumes:
+      - .:/api
+    command: ["dotnet", "run"]
+    ports:
+      - "5156:5156"
+    restart: unless-stopped
+
+  adminer:
+    container_name: adminer
+    image: adminer
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8080:8080"

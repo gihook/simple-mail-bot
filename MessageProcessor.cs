@@ -53,9 +53,16 @@ public class MessageProcessor
         foreach (var uid in uids)
         {
             var message = inbox.GetMessage(uid);
-            var response = await TryToRespond(uid, message);
-            await inbox.AddFlagsAsync(uid, MessageFlags.Seen, true);
-            await SaveResult(uid, message, response);
+            try
+            {
+                var response = await TryToRespond(uid, message);
+                await inbox.AddFlagsAsync(uid, MessageFlags.Seen, true);
+                await SaveResult(uid, message, response);
+            }
+            catch (Exception e)
+            {
+                await SaveResult(uid, message, e.Message);
+            }
         }
 
         client.Disconnect(true);
