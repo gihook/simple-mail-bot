@@ -4,18 +4,22 @@
     ViewData["Title"] = "Home page";
 }
 
+<p>Page: (@Model.Emails.PageNumber / @Model.Emails.PageCount)</p>
+<p>Page size: @Model.Emails.PageSize</p>
+<p>Total number of items: @Model.Emails.TotalCount</p>
+
 <table class="table">
     <thead>
         <tr>
             <th>Id</th>
             <th>Subject</th>
-            <th>Timestamp</th>
+            <th>Timestamp (UTC)</th>
             <th>Response</th>
             <th>Status</th>
         </tr>
     </thead>
     <tbody>
-    @foreach (var email in Model.Emails)
+    @foreach (var email in Model.Emails.Items)
     {
         <tr>
             <td>

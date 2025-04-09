@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.EntityFrameworkCore;
 
 namespace mailbot_server.Pages;
 
@@ -10,8 +9,8 @@ public class IndexModel : PageModel
     private readonly ApplicationDbContext _dbContext;
 
     [BindProperty]
-    public List<ProcessedEmail> Emails { get; set; } =
-        new List<ProcessedEmail>();
+    public PaginatedResult<ProcessedEmail> Emails { get; set; } =
+        new PaginatedResult<ProcessedEmail>();
 
     public IndexModel(
         ILogger<IndexModel> logger,
@@ -22,8 +21,15 @@ public class IndexModel : PageModel
         _dbContext = dbContext;
     }
 
-    public async Task OnGetAsync()
+    public async Task OnGetAsync(int pageNumber = 1, int pageSize = 10)
     {
-        Emails = await _dbContext.ProcessedEmails.ToListAsync();
+        var paginationInfo = new PaginationInfo()
+        {
+            PageNumber = pageNumber,
+            PageSize = pageSize,
+        };
+        Emails = await _dbContext
+            .ProcessedEmails.OrderByDescending(x => x.Timestamp)
+            .GetPaginatedResult<ProcessedEmail>(paginationInfo);
     }
 }
