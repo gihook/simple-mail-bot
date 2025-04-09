@@ -17,6 +17,8 @@ services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlite("Data Source=app.db")
 );
 
+services.AddScoped<IQuestionProvider, ConfigQuestionsProvider>();
+
 services.AddTransient<MessageProcessor>();
 services.AddTransient<ResponseGenerator>();
 services.AddTransient<ProcessMailTask>();

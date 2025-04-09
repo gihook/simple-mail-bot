@@ -7,15 +7,17 @@ public class ResponseGenerator
 {
     private readonly string _apiKey;
     private readonly string _model;
-    private List<QuestionWithAnswer> _questions;
 
-    public ResponseGenerator(IConfiguration configuration)
+    private readonly IQuestionProvider _questionProvider;
+
+    public ResponseGenerator(
+        IConfiguration configuration,
+        IQuestionProvider questionProvider
+    )
     {
+        _questionProvider = questionProvider;
         _apiKey = configuration["ChatGpt:ApiKey"];
         _model = configuration["ChatGpt:Model"];
-        _questions = configuration
-            .GetSection("ChatGpt:Questions")
-            .Get<List<QuestionWithAnswer>>();
     }
 
     public async Task<ResponseResult> GenerateResponse(
@@ -35,7 +37,7 @@ public class ResponseGenerator
         var chatMessages = new List<ChatMessage>();
         chatMessages.Add(userMessage);
 
-        var tool = GenerateTool(_questions);
+        var tool = await GenerateTool();
         options.Tools.Add(tool);
 
         options.ToolChoice = ChatToolChoice.CreateFunctionChoice("respondMail");
@@ -54,8 +56,9 @@ public class ResponseGenerator
         return result;
     }
 
-    private ChatTool GenerateTool(IEnumerable<QuestionWithAnswer> questions)
+    private async Task<ChatTool> GenerateTool()
     {
+        var questions = await _questionProvider.GetAllQuestions();
         var description = GenerateToolPrompt(questions);
 
         var functionDefinition = new
