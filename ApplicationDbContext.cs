@@ -3,10 +3,11 @@ using Microsoft.EntityFrameworkCore;
 
 public class ApplicationDbContext : DbContext
 {
+    public required DbSet<ProcessedEmail> ProcessedEmails { get; set; }
+    public required DbSet<QuestionWithAnswer> QuestionWithAnswers { get; set; }
+
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         : base(options) { }
-
-    public required DbSet<ProcessedEmail> ProcessedEmails { get; set; }
 }
 
 public class ProcessedEmail
