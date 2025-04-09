@@ -53,16 +53,9 @@ public class MessageProcessor
         foreach (var uid in uids)
         {
             var message = inbox.GetMessage(uid);
-            try
-            {
-                var response = await TryToRespond(uid, message);
-                await inbox.AddFlagsAsync(uid, MessageFlags.Seen, true);
-                await SaveResult(uid, message, response);
-            }
-            catch (Exception e)
-            {
-                await SaveResult(uid, message, e.Message);
-            }
+            var response = await TryToRespond(uid, message);
+            await inbox.AddFlagsAsync(uid, MessageFlags.Seen, true);
+            await SaveResult(uid, message, response);
         }
 
         client.Disconnect(true);
@@ -112,9 +105,7 @@ public class MessageProcessor
         var messageContent = responseResult.ResponseContent;
 
         if (!responseResult.CanRespond)
-            throw new ArgumentException(
-                "Cannot respond for message: " + message.Subject
-            );
+            return "Cannot respond for message: " + message.Body;
 
         var reply = new MimeMessage();
         reply.From.Add(new MailboxAddress(_emailName, _email));

@@ -7,18 +7,7 @@ services:
       - .env
     volumes:
       - .:/api
-    command: ["dotnet", "run"]
+    command: ["dotnet", "watch", "run"]
     ports:
       - "5156:5156"
     restart: unless-stopped
-
-  adminer:
-    container_name: adminer
-    image: adminer
-    restart: unless-stopped
-    environment:
-        ADMINER_PASSWORD: test
-    volumes:
-      - ./db:/var/www/html/data
-    ports:
-      - "127.0.0.1:8080:8080"

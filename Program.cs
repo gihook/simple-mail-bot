@@ -62,6 +62,12 @@ app.UseAuthorization();
 app.MapStaticAssets();
 app.MapRazorPages().WithStaticAssets();
 
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    await db.Database.MigrateAsync();
+}
+
 RecurringJob.AddOrUpdate(
     "ProcessUnreadMessages",
     (ProcessMailTask t) => t.Process(),
