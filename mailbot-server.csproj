@@ -10,13 +10,17 @@
 
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.4">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
     <PackageReference Include="OpenAI" Version="2.1.0" />
     <PackageReference Include="Hangfire" Version="1.8.7" />
     <PackageReference Include="Hangfire.Heartbeat" Version="0.6.0" />
     <PackageReference Include="Hangfire.JobsLogger" Version="0.2.1" />
     <PackageReference Include="Hangfire.Storage.SQLite" Version="0.4.2" />
     <PackageReference Include="MailKit" Version="4.11.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.3" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.4" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="OpenAI" Version="2.1.0" />
   </ItemGroup>

@@ -4,6 +4,7 @@ using Hangfire.Heartbeat.Server;
 using Hangfire.JobsLogger;
 using Hangfire.Server;
 using Hangfire.Storage.SQLite;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,6 +12,10 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorPages();
 
 var services = builder.Services;
+
+services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlite("Data Source=app.db")
+);
 
 services.AddTransient<MessageProcessor>();
 services.AddTransient<ResponseGenerator>();
@@ -23,7 +28,7 @@ services.AddHangfire(configuration =>
         .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
         .UseSimpleAssemblyNameTypeSerializer()
         .UseRecommendedSerializerSettings()
-        .UseSQLiteStorage("Hangfire.db")
+        .UseSQLiteStorage("app.db")
         .UseHeartbeatPage(checkInterval: TimeSpan.FromSeconds(10))
         .UseJobsLogger()
 );

@@ -13,12 +13,12 @@ public class MessageProcessor
     private readonly string _imap;
     private readonly string _smtp;
     private readonly ResponseGenerator _responseGenerator;
-    private readonly ILogger<MessageProcessor> _logger;
+    private readonly ApplicationDbContext _dbContext;
 
     public MessageProcessor(
         IConfiguration configuration,
         ResponseGenerator responseGenerator,
-        ILogger<MessageProcessor> logger
+        ApplicationDbContext dbContext
     )
     {
         _email = configuration["Mail:Email"];
@@ -27,7 +27,7 @@ public class MessageProcessor
         _imap = configuration["Mail:Imap"];
         _smtp = configuration["Mail:Smtp"];
         _responseGenerator = responseGenerator;
-        _logger = logger;
+        _dbContext = dbContext;
     }
 
     public async Task ProcessUnreadMessages(DateTime sinceDate)
@@ -47,17 +47,37 @@ public class MessageProcessor
         foreach (var uid in uids)
         {
             var message = inbox.GetMessage(uid);
-            _logger.LogInformation(
-                $"Subject: {message.Subject}, Date: {message.Date}"
-            );
-            await TryToRespond(uid, message);
-            inbox.AddFlags(uid, MessageFlags.Seen, true);
+            var response = await TryToRespond(uid, message);
+            await inbox.AddFlagsAsync(uid, MessageFlags.Seen, true);
+            await SaveResult(uid, message, response);
         }
 
         client.Disconnect(true);
     }
 
-    private async Task TryToRespond(UniqueId messageId, MimeMessage message)
+    private async Task SaveResult(
+        UniqueId uid,
+        MimeMessage message,
+        string response
+    )
+    {
+        var processedEmail = new ProcessedEmail
+        {
+            Id = uid.ToString(),
+            Subject = message.Subject,
+            Body = message.HtmlBody,
+            Timestamp = DateTime.UtcNow,
+            Response = response,
+            Status = ProcessingStatus.Done,
+        };
+        _dbContext.ProcessedEmails.Add(processedEmail);
+        await _dbContext.SaveChangesAsync();
+    }
+
+    private async Task<string> TryToRespond(
+        UniqueId messageId,
+        MimeMessage message
+    )
     {
         var responseResult = await GenerateResponse(message);
         var messageContent = responseResult.ResponseContent;
@@ -85,13 +105,16 @@ public class MessageProcessor
             + "<p>----- Original Message -----</p>"
             + message.HtmlBody;
 
-        reply.Body = bodyBuilder.ToMessageBody();
+        var responseMesage = bodyBuilder.ToMessageBody();
+        reply.Body = responseMesage;
 
         using var smtpClient = new SmtpClient();
         await smtpClient.ConnectAsync(_smtp, 587, false);
         await smtpClient.AuthenticateAsync(_email, _password);
         await smtpClient.SendAsync(reply);
         await smtpClient.DisconnectAsync(true);
+
+        return response;
     }
 
     private async Task<ResponseResult> GenerateResponse(MimeMessage message)
