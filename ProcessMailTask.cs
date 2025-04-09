@@ -9,7 +9,6 @@ public class ProcessMailTask
 
     public async Task Process()
     {
-        var since = DateTime.Today;
-        await _messageProcessor.ProcessUnreadMessages(since);
+        await _messageProcessor.ProcessUnreadMessages();
     }
 }

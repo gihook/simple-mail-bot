@@ -230,5 +230,5 @@ _Pvt_Extensions
 # FAKE - F# Make
 .fake/
 
-Hangfire.db*
 app.db*
+db/app.db*

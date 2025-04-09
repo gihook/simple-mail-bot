@@ -3,6 +3,7 @@ using MailKit.Net.Imap;
 using MailKit.Net.Smtp;
 using MailKit.Search;
 using MailKit.Security;
+using Microsoft.EntityFrameworkCore;
 using MimeKit;
 
 public class MessageProcessor
@@ -14,11 +15,13 @@ public class MessageProcessor
     private readonly string _smtp;
     private readonly ResponseGenerator _responseGenerator;
     private readonly ApplicationDbContext _dbContext;
+    private readonly TimeService _timeService;
 
     public MessageProcessor(
         IConfiguration configuration,
         ResponseGenerator responseGenerator,
-        ApplicationDbContext dbContext
+        ApplicationDbContext dbContext,
+        TimeService timeService
     )
     {
         _email = configuration["Mail:Email"];
@@ -28,10 +31,13 @@ public class MessageProcessor
         _smtp = configuration["Mail:Smtp"];
         _responseGenerator = responseGenerator;
         _dbContext = dbContext;
+        _timeService = timeService;
     }
 
-    public async Task ProcessUnreadMessages(DateTime sinceDate)
+    public async Task ProcessUnreadMessages()
     {
+        var sinceDate = await GetProcessingStartTime();
+
         using var client = new ImapClient();
         await client.ConnectAsync(_imap, 993, SecureSocketOptions.SslOnConnect);
         await client.AuthenticateAsync(_email, _password);
@@ -53,6 +59,22 @@ public class MessageProcessor
         }
 
         client.Disconnect(true);
+    }
+
+    private async Task<DateTime> GetProcessingStartTime()
+    {
+        var serverStartTime = _timeService.GetStartTimestamp();
+
+        var lastProcessedMessage = await _dbContext
+            .ProcessedEmails.OrderByDescending(x => x.Timestamp)
+            .LastOrDefaultAsync();
+
+        if (lastProcessedMessage == null)
+            return serverStartTime;
+
+        return serverStartTime > lastProcessedMessage.Timestamp
+            ? serverStartTime
+            : lastProcessedMessage.Timestamp;
     }
 
     private async Task SaveResult(

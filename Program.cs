@@ -14,9 +14,10 @@ builder.Services.AddRazorPages();
 var services = builder.Services;
 
 services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlite("Data Source=app.db")
+    options.UseSqlite("Data Source=db/app.db")
 );
 
+services.AddSingleton<TimeService>();
 services.AddScoped<IQuestionProvider, ConfigQuestionsProvider>();
 
 services.AddTransient<MessageProcessor>();
