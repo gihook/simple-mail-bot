@@ -75,13 +75,13 @@ public class MessageProcessor
         reply.Subject = "Re: " + message.Subject;
 
         var bodyBuilder = new BodyBuilder();
-		var response = responseResult.ResponseContent;
+        var response = responseResult.ResponseContent;
 
         bodyBuilder.HtmlBody =
             $"<p>{response}</p>"
-            + $"<p></p>" 
-            + $"<p>Ovu poruku je generisao MailBot.</p>" 
-            + $"<p></p>" 
+            + $"<p></p>"
+            + $"<p>Ovu poruku je generisao MailBot.</p>"
+            + $"<p></p>"
             + "<p>----- Original Message -----</p>"
             + message.HtmlBody;
 
