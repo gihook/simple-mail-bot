@@ -107,26 +107,15 @@ public class MessageProcessor
         if (!responseResult.CanRespond)
             return "Cannot respond for message: " + message.Body;
 
-        var reply = new MimeMessage();
+        var reply = CreateReplyMessage(message);
         reply.From.Add(new MailboxAddress(_emailName, _email));
-        reply.To.AddRange(
-            message.ReplyTo.Count > 0 ? message.ReplyTo : message.From
-        );
-        reply.Subject = "Re: " + message.Subject;
 
-        var bodyBuilder = new BodyBuilder();
         var response = responseResult.ResponseContent;
 
-        bodyBuilder.HtmlBody =
-            $"<p>{response}</p>"
-            + $"<p></p>"
-            + $"<p>Ovu poruku je generisao MailBot.</p>"
-            + $"<p></p>"
-            + "<p>----- Original Message -----</p>"
-            + message.HtmlBody;
-
-        var responseMesage = bodyBuilder.ToMessageBody();
-        reply.Body = responseMesage;
+        reply.Body = new TextPart("plain")
+        {
+            Text = responseResult.ResponseContent,
+        };
 
         using var smtpClient = new SmtpClient();
         await smtpClient.ConnectAsync(_smtp, 587, false);
@@ -135,6 +124,42 @@ public class MessageProcessor
         await smtpClient.DisconnectAsync(true);
 
         return response;
+    }
+
+    private MimeMessage CreateReplyMessage(MimeMessage message)
+    {
+        var reply = new MimeMessage();
+
+        // reply to the sender of the message
+        if (message.ReplyTo.Count > 0)
+        {
+            reply.To.AddRange(message.ReplyTo);
+        }
+        else if (message.From.Count > 0)
+        {
+            reply.To.AddRange(message.From);
+        }
+        // set the reply subject
+        if (
+            !message.Subject.StartsWith(
+                "Re:",
+                StringComparison.OrdinalIgnoreCase
+            )
+        )
+            reply.Subject = "Re:" + message.Subject;
+        else
+            reply.Subject = message.Subject;
+
+        // construct the In-Reply-To and References headers
+        if (!string.IsNullOrEmpty(message.MessageId))
+        {
+            reply.InReplyTo = message.MessageId;
+            foreach (var id in message.References)
+                reply.References.Add(id);
+            reply.References.Add(message.MessageId);
+        }
+
+        return reply;
     }
 
     private async Task<ResponseResult> GenerateResponse(MimeMessage message)
