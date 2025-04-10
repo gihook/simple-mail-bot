@@ -18,7 +18,7 @@ services.AddDbContext<ApplicationDbContext>(options =>
 );
 
 services.AddSingleton<TimeService>();
-services.AddScoped<IQuestionProvider, ConfigQuestionsProvider>();
+services.AddScoped<IQuestionProvider, DatabaseQuestionsProvider>();
 
 services.AddTransient<MessageProcessor>();
 services.AddTransient<ResponseGenerator>();
@@ -71,7 +71,7 @@ using (var scope = app.Services.CreateScope())
 RecurringJob.AddOrUpdate(
     "ProcessUnreadMessages",
     (ProcessMailTask t) => t.Process(),
-    Cron.HourInterval(10)
+    Cron.Minutely
 );
 
 app.Run();
