@@ -71,7 +71,7 @@ using (var scope = app.Services.CreateScope())
 RecurringJob.AddOrUpdate(
     "ProcessUnreadMessages",
     (ProcessMailTask t) => t.Process(),
-    Cron.Minutely
+    Cron.HourInterval(10)
 );
 
 app.Run();
